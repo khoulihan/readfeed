@@ -1,0 +1,24 @@
+[project]
+name = "readfeed"
+version = "0.1.0"
+description = "Generates a custom Atom feed from provided links, for later reading."
+authors = [
+    {name = "Kevin Houlihan",email = "kevin@crimsoncookie.com"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "flask (>=3.1.0,<4.0.0)",
+    "beautifulsoup4 (>=4.12.3,<5.0.0)",
+    "requests (>=2.32.3,<3.0.0)",
+    "click (>=8.1.8,<9.0.0)"
+]
+
+[project.scripts]
+readfeed="readfeed:main"
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,22 @@
+<feed>
+  <title>readfeed.</title>
+  <subtitle>A feed of your reads.</subtitle>
+  <id>{{ id }}</id>
+  <link href="{{ id }}" rel="alternate" />
+  <link href="{{ feed_url }}" rel="self" />
+  <updated>{{ updated }}</updated>
+  {% for article in articles %}
+  <entry>
+    <title>{{ article.title }}</title>
+    <link href="{{ article.url }}" rel="alternate" />
+    <published>{{ article.date_submitted }}</published>
+    <updated>{{ article.date_submitted }}</updated>
+    {% if article.author %}
+    <author><name>{{ article.author }}</name></author>
+    {% endif %}
+    <id></id>
+    <summary>{{ article.summary }}</summary>
+    <content type="text">{{ article.summary }}</content>
+  </entry>
+  {% endfor %}
+</feed>

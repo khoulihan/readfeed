@@ -1,0 +1,335 @@
+<!doctype html>
+<html> 
+  <head>
+    <meta charset="UTF-8">
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fuchsia.min.css">
+    <link rel="canonical" href="{{ url_for('index') }}">
+    <link
+      rel="alternate"
+      type="application/atom+xml"
+      href="{{ url_for('feeds_static', filename='atom.xml') }}">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" sizes="32x32">
+    <link rel="icon" href="{{ url_for('static', filename='rss.svg') }}" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+    <title>readfeed.</title>
+    <meta name="description" content="A feed for your reads. Generates a custom Atom feed from submitted articles.">
+    <meta property="og:title" content="readfeed.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url_for('index') }}">
+    <meta property="og:image" content="{{ url_for('static', filename='og.jpg') }}">
+    <meta property="og:image:alt" content="Photo of a rounded corner section of a footpath, with a design that resembles the RSS feed icon. Part of it is covered in snow. 'Even the Sidewalks Have RSS Feeds' by cogdogblog is licensed under CC BY 2.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/2.0/?ref=openverse.">
+    <meta property="og:image:type" content="image/jpg">
+    <meta property="og:image:width" content="400">
+    <meta property="og:image:height" content="300">
+    <meta property="og:description" content="A feed for your reads. Generates a custom Atom feed from submitted articles.">
+    <style>
+    .error {
+      background-color: #c1208b;
+    }
+    </style>
+    <script>
+
+    var articleToRemove;
+
+    function openConfirmArticleRemovalDialog(articleUrl) {
+      articleToRemove = articleUrl;
+      var d = document.getElementById("confirm-article-removal-dialog");
+      openModal(d);
+    }
+
+    function confirmArticleRemoval() {
+      var d = document.getElementById("confirm-article-removal-dialog");
+      closeModal(d);
+      setTimeout(() => {
+        window.location.replace("{{ url_for('remove')}}?url=" + articleToRemove);
+      }, animationDuration);
+    }
+
+    function displayError(text) {
+      var eb = document.getElementById("error-body");
+      eb.textContent = text;
+      var d = document.getElementById("error-dialog");
+      openModal(d);
+    }
+
+    function hideProcessingCard() {
+      var c = document.getElementById("processing-card");
+      if (c) {
+        c.setAttribute("hidden", null);
+      }
+    }
+
+    /*
+     * Modal
+     *
+     * Pico.css - https://picocss.com
+     * Copyright 2019-2024 - Licensed under MIT
+     */
+    
+    // Config
+    const isOpenClass = "modal-is-open";
+    const openingClass = "modal-is-opening";
+    const closingClass = "modal-is-closing";
+    const scrollbarWidthCssVar = "--pico-scrollbar-width";
+    const animationDuration = 400; // ms
+    let visibleModal = null;
+    
+    // Toggle modal
+    const toggleModal = (event) => {
+      event.preventDefault();
+      const modal = document.getElementById(event.currentTarget.dataset.target);
+      if (!modal) return;
+      modal && (modal.open ? closeModal(modal) : openModal(modal));
+    };
+    
+    // Open modal
+    const openModal = (modal) => {
+      const { documentElement: html } = document;
+      const scrollbarWidth = getScrollbarWidth();
+      if (scrollbarWidth) {
+        html.style.setProperty(scrollbarWidthCssVar, `${scrollbarWidth}px`);
+      }
+      html.classList.add(isOpenClass, openingClass);
+      setTimeout(() => {
+        visibleModal = modal;
+        html.classList.remove(openingClass);
+      }, animationDuration);
+      modal.showModal();
+    };
+    
+    // Close modal
+    const closeModal = (modal) => {
+      visibleModal = null;
+      const { documentElement: html } = document;
+      html.classList.add(closingClass);
+      setTimeout(() => {
+        html.classList.remove(closingClass, isOpenClass);
+        html.style.removeProperty(scrollbarWidthCssVar);
+        modal.close();
+      }, animationDuration);
+    };
+    
+    // Close with a click outside
+    document.addEventListener("click", (event) => {
+      if (visibleModal === null) return;
+      const modalContent = visibleModal.querySelector("article");
+      const isClickInside = modalContent.contains(event.target);
+      !isClickInside && closeModal(visibleModal);
+    });
+    
+    // Close with Esc key
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && visibleModal) {
+        closeModal(visibleModal);
+      }
+    });
+    
+    // Get scrollbar width
+    const getScrollbarWidth = () => {
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      return scrollbarWidth;
+    };
+    
+    // Is scrollbar visible
+    const isScrollbarVisible = () => {
+      return document.body.scrollHeight > screen.height;
+    };
+    </script>
+  </head>
+  <body>
+    <dialog id="error-dialog">
+      <article>
+        <header class="error">
+          <button
+            aria-label="Close"
+            rel="prev"
+            data-target="error-dialog"
+            onclick="toggleModal(event);"></button>
+          <h3>⚠️  Error</h3>
+        </header>
+        <p id="error-body">{{ error_text }}</p>
+        <footer>
+          <button
+            type="button"
+            aria-label="Close"
+            data-target="error-dialog"
+            onclick="toggleModal(event);">Close</button>
+        </footer>
+      </article>
+    </dialog>
+    <dialog id="confirm-article-removal-dialog">
+      <article>
+        <header>
+          <button
+            aria-label="Close"
+            rel="prev"
+            data-target="confirm-article-removal-dialog"
+            onclick="toggleModal(event);"></button>
+          <h3>Confirm Article Removal</h3>
+        </header>
+        <p>Are you sure you want to remove this article? This action cannot be undone.</p>
+        <footer>
+          <button
+            class="secondary"
+            type="button"
+            aria-label="Cancel"
+            data-target="confirm-article-removal-dialog"
+            onclick="toggleModal(event);">Cancel</button>
+          <button
+            type="button"
+            aria-label="Confirm"
+            onclick="confirmArticleRemoval();">Go Ahead</button>
+        </footer>
+      </article>
+    </dialog>
+    <header class="container">
+      <nav>
+        <ul>
+          <li>
+            <hgroup>
+              <h1>readfeed.</h1>
+              <p>A feed of your reads.</p>
+            </hgroup>
+          </li>
+        </ul>
+        <ul>
+          <li>
+            <a
+              href="{{ url_for('feeds_static', filename='atom.xml') }}"
+              target="_blank"
+              title="Atom Feed">
+              <img
+                width="32"
+                height="32"
+                src="{{ url_for('static', filename='rss.svg') }}"
+                alt="Atom Feed Icon">
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+    <main class="container">
+      <section>
+        <form method="POST">
+          <fieldset role="group">
+            <input type="text" name="url" placeholder="Enter a URL">
+            <input type="submit" value="Read it later">
+          </fieldset>
+        </form>
+      </section>
+      <section>
+        {% if queue_attempted %}
+          {% if article_queued %}
+        <article id="processing-card">
+          <p>Your submission is being processed, please wait...</p>
+          <progress />
+        </article>
+          {% endif %}
+        {% endif %}
+        {% if articles %}
+          {% for article in articles %}
+        <article> 
+          <header>
+            <nav class="container-fluid">
+              <ul>
+                <li>
+                  <hgroup>
+                    <h3><a href="{{ article.url }}">{{ article.title }}</a></h3>
+                    <p>
+                      {% if article.author %}{{ article.author }} for {% endif %}{{ article.source }}
+                    </p>
+                  </hgroup>
+                </li>
+              </ul>
+              <ul>
+                <li>
+                  <button
+                    class="secondary"
+                    type="button"
+                    onclick="openConfirmArticleRemovalDialog('{{ article.url|urlencode }}');">
+                    Remove
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </header>
+          <p>{{ article.summary }}</p>
+        </article>
+          {% endfor %}
+        {% else %}
+          <p>There's nothing here yet! Add an article URL above to get started.</p>
+        {% endif %}
+      </section>
+    </main>
+    <footer class="container">
+      <nav>
+        <ul>
+          <li>Page {{page}} of {{pages}}</li>
+        </ul>
+        <ul>
+          <li>
+            <a
+              role="button"
+              href="{{ url_for('index', page=page-1) }}"
+              {{ "disabled" if page <= 1 }}>Previous</a>
+          </li>
+          <li>
+            <a
+              role="button"
+              href="{{ url_for('index', page=page+1) }}"
+              {{ "disabled" if page >= pages }}>Next</a>
+          </li>
+        </ul>
+      </nav>
+    </footer>
+    <script>
+    {# If there was error text provided, display a dialog for it #}
+    {% if error_text %}
+    (function() {
+      var d = document.getElementById("error-dialog");
+      openModal(d);
+    })();
+    {% endif %}
+
+    {# If an article was queued then we need to check in on its status #}
+    {% if article_queued %}
+    (function() {
+      const checkTimeout = 1000;
+      const checkStatus = function() {
+        let xhr = new XMLHttpRequest();
+        xhr.open(
+          "GET",
+          "{{ url_for('status', url=article_url|urlencode) }}",
+          true
+        );
+        xhr.onreadystatechange = function() {
+          if (this.readyState == 4) {
+            if (this.status == 200) {
+              var result = JSON.parse(this.responseText);
+              if (result['processing_failed']) {
+                window.location.replace(
+                  "{{ url_for('index', error_text='Article processing failed. An entry has been created in the feed using the available information.')}}"
+                );
+              } else if (result['processed']) {
+                // Reload to display the processed article
+                window.location.replace("{{ url_for('index')}}");
+              } else {
+                // No definitive status yet, try again.
+                setTimeout(() => { checkStatus(); }, checkTimeout);
+              }
+            } else {
+              displayError("Article status check failed!");
+              hideProcessingCard();
+            }
+          }
+        };
+        xhr.send();
+      };
+      setTimeout(() => { checkStatus(); }, checkTimeout);
+    })();
+    {% endif %}
+    </script>
+  </body>
+</html>
