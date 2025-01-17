@@ -142,10 +142,15 @@ def _regenerate_feed(articles):
         "feed.xml",
         articles=articles,
         id=url_for('index'),
-        feed_url=url_for('feeds_static', filename="atom.xml"),
+        feed_url=url_for('feeds_static', filename=current_app.config['FEED_FILE']),
         updated=datetime.utcnow()
     )
-    with open(os.path.join(current_app.root_path, "feeds/atom.xml"), 'w') as feedfile:
+    feed_file_path = os.path.join(
+        current_app.root_path,
+        current_app.config['FEED_PATH'],
+        current_app.config['FEED_FILE']
+    )
+    with open(feed_file_path, 'w') as feedfile:
         feedfile.write(feed)
 
 

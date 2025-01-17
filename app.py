@@ -12,6 +12,9 @@ DEFAULT_PAGE_SIZE = 10
 DB_FILE = 'articles.db'
 DEFAULT_SERVER_NAME = "localhost:5000"
 DEFAULT_FEED_SIZE = 20
+DEFAULT_FEED_PATH = "feeds"
+DEFAULT_FEED_ROUTE = "feeds"
+DEFAULT_FEED_FILE = "atom.xml"
 
 
 def create_app(test_config=None):
@@ -20,6 +23,9 @@ def create_app(test_config=None):
         DATABASE=os.path.join(app.instance_path, DB_FILE),
         SERVER_NAME=DEFAULT_SERVER_NAME,
         FEED_SIZE=DEFAULT_FEED_SIZE,
+        FEED_PATH=DEFAULT_FEED_PATH,
+        FEED_ROUTE=DEFAULT_FEED_ROUTE,
+        FEED_FILE=DEFAULT_FEED_FILE,
         PAGE_SIZE=DEFAULT_PAGE_SIZE,
     )
 
@@ -115,10 +121,13 @@ def create_app(test_config=None):
     
     # This allows the development server to serve static files from the "feeds"
     # directory. These would hopefully be served by the web server in production.
-    @app.get('/feeds/<path:filename>')
+    @app.get('/%s/<path:filename>' % app.config['FEED_ROUTE'])
     def feeds_static(filename):
         return send_from_directory(
-            os.path.join(current_app.root_path, 'feeds'),
+            os.path.join(
+                current_app.root_path,
+                current_app.config['FEED_PATH']
+            ),
             filename
         )
     

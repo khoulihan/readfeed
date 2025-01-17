@@ -9,7 +9,7 @@
     <link
       rel="alternate"
       type="application/atom+xml"
-      href="{{ url_for('feeds_static', filename='atom.xml') }}">
+      href="{{ url_for('feeds_static', filename=config.FEED_FILE) }}">
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" sizes="32x32">
     <link rel="icon" href="{{ url_for('static', filename='rss.svg') }}" type="image/svg+xml">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
@@ -197,7 +197,7 @@
         <ul>
           <li>
             <a
-              href="{{ url_for('feeds_static', filename='atom.xml') }}"
+              href="{{ url_for('feeds_static', filename=config.FEED_FILE) }}"
               target="_blank"
               title="Atom Feed">
               <img
