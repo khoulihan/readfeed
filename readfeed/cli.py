@@ -5,7 +5,7 @@ import click
 import requests
 from bs4 import BeautifulSoup
 from jinja2 import Environment, PackageLoader, select_autoescape
-from flask import current_app, url_for
+from flask import current_app, url_for, render_template
 from .data import Article, ArticleStore
 
 
@@ -138,7 +138,7 @@ def _extract_author(soup):
 
 
 def _regenerate_feed(articles):
-    feed = _render_template(
+    feed = render_template(
         "feed.xml",
         articles=articles,
         id=url_for('index'),
@@ -152,13 +152,4 @@ def _regenerate_feed(articles):
     )
     with open(feed_file_path, 'w') as feedfile:
         feedfile.write(feed)
-
-
-def _render_template(name, **kwargs):
-    env = Environment(
-        loader=PackageLoader("readfeed"),
-        autoescape=select_autoescape()
-    )
-    template = env.get_template(name)
-    return template.render(**kwargs)
 

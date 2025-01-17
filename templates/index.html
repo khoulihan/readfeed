@@ -13,9 +13,9 @@
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" sizes="32x32">
     <link rel="icon" href="{{ url_for('static', filename='rss.svg') }}" type="image/svg+xml">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
-    <title>readfeed.</title>
-    <meta name="description" content="A feed for your reads. Generates a custom Atom feed from submitted articles.">
-    <meta property="og:title" content="readfeed.">
+    <title>{{ config.TITLE }}</title>
+    <meta name="description" content="{{ config.SUBTITLE }} Generates a custom Atom feed from submitted articles.">
+    <meta property="og:title" content="{{ config.TITLE }}">
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url_for('index') }}">
     <meta property="og:image" content="{{ url_for('static', filename='og.jpg') }}">
@@ -23,7 +23,7 @@
     <meta property="og:image:type" content="image/jpg">
     <meta property="og:image:width" content="400">
     <meta property="og:image:height" content="300">
-    <meta property="og:description" content="A feed for your reads. Generates a custom Atom feed from submitted articles.">
+    <meta property="og:description" content="{{ config.SUBTITLE }} Generates a custom Atom feed from submitted articles.">
     <style>
     .error {
       background-color: #c1208b;
@@ -189,8 +189,8 @@
         <ul>
           <li>
             <hgroup>
-              <h1>readfeed.</h1>
-              <p>A feed of your reads.</p>
+              <h1>{{ config.TITLE }}</h1>
+              <p>{{ config.SUBTITLE }}</p>
             </hgroup>
           </li>
         </ul>

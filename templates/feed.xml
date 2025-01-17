@@ -1,6 +1,6 @@
 <feed>
-  <title>readfeed.</title>
-  <subtitle>A feed of your reads.</subtitle>
+  <title>{{ config.TITLE }}</title>
+  <subtitle>{{ config.SUBTITLE }}</subtitle>
   <id>{{ id }}</id>
   <link href="{{ id }}" rel="alternate" />
   <link href="{{ feed_url }}" rel="self" />

@@ -8,6 +8,9 @@ from flask import abort, redirect, url_for, current_app
 from readfeed.data import Article, ArticleStore
 from readfeed import cli
 
+
+DEFAULT_TITLE = "readfeed."
+DEFAULT_SUBTITLE = "A feed of your reads."
 DEFAULT_PAGE_SIZE = 10
 DB_FILE = 'articles.db'
 DEFAULT_SERVER_NAME = "localhost:5000"
@@ -20,6 +23,8 @@ DEFAULT_FEED_FILE = "atom.xml"
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
+        TITLE=DEFAULT_TITLE,
+        SUBTITLE=DEFAULT_SUBTITLE,
         DATABASE=os.path.join(app.instance_path, DB_FILE),
         SERVER_NAME=DEFAULT_SERVER_NAME,
         FEED_SIZE=DEFAULT_FEED_SIZE,
