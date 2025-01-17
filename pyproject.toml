@@ -15,10 +15,6 @@ dependencies = [
     "click (>=8.1.8,<9.0.0)"
 ]
 
-[project.scripts]
-readfeed="readfeed:main"
-
-
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"

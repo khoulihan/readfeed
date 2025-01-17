@@ -1,28 +1,19 @@
+import os
 from datetime import datetime
 from urllib.parse import urlparse
 import click
 import requests
 from bs4 import BeautifulSoup
 from jinja2 import Environment, PackageLoader, select_autoescape
+from flask import current_app, url_for
 from .data import Article, ArticleStore
 
 
-DB_NAME = "articles.db"
-FEED_SIZE = 20
-ID_URL = "http://localhost:5000/"
-FEED_URL = ID_URL + "feeds/atom.xml"
-
-
-@click.group()
-def _cli():
-    pass
-
-
-@_cli.command(help="Process all submitted articles outstanding")
+@click.command(help="Process all submitted articles outstanding")
 @click.option('--force-regenerate', is_flag=True)
 def process(force_regenerate):
     click.echo("Processing...")
-    with ArticleStore(DB_NAME) as store:
+    with ArticleStore(current_app.config['DATABASE']) as store:
         articles = store.get_unprocessed()
         any_processed = False
         for article in articles:
@@ -45,13 +36,13 @@ def process(force_regenerate):
 
 
         if any_processed or force_regenerate:
-            _regenerate_feed(store.get_range(0, FEED_SIZE))
+            _regenerate_feed(store.get_range(0, current_app.config['FEED_SIZE']))
 
 
-@_cli.command(help="Reset all articles to be processed again. Temporary command for testing purposes!")
+@click.command(help="Reset all articles to be processed again. Temporary command for testing purposes!")
 def reset():
     click.echo("Resetting...")
-    with ArticleStore(DB_NAME) as store:
+    with ArticleStore(current_app.config['DATABASE']) as store:
         articles = store.get_all()
         for article in articles:
             article.title = ""
@@ -63,6 +54,11 @@ def reset():
             article.author = ""
             article.source = ""
             store.update(article)
+
+
+def init_app(app):
+    app.cli.add_command(process)
+    app.cli.add_command(reset)
 
 
 def _process_article(article):
@@ -145,11 +141,11 @@ def _regenerate_feed(articles):
     feed = _render_template(
         "feed.xml",
         articles=articles,
-        id=ID_URL,
-        feed_url=FEED_URL,
+        id=url_for('index'),
+        feed_url=url_for('feeds_static', filename="atom.xml"),
         updated=datetime.utcnow()
     )
-    with open("./feeds/atom.xml", 'w') as feedfile:
+    with open(os.path.join(current_app.root_path, "feeds/atom.xml"), 'w') as feedfile:
         feedfile.write(feed)
 
 
@@ -161,6 +157,3 @@ def _render_template(name, **kwargs):
     template = env.get_template(name)
     return template.render(**kwargs)
 
-
-def main():
-    _cli()
