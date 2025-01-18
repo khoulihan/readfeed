@@ -14,9 +14,12 @@
     {% if article.author %}
     <author><name>{{ article.author }}</name></author>
     {% endif %}
-    <id></id>
+    <id>{{ article.url }}</id>
     <summary>{{ article.summary }}</summary>
-    <content type="text">{{ article.summary }}</content>
+    <content type="html">
+      <p>{{ article.summary }}</p>
+      <p><a href="{{ article.url}}" target="_blank">Read article</a></p>
+    </content>
   </entry>
   {% endfor %}
 </feed>
