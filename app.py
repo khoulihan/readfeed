@@ -4,7 +4,7 @@ from datetime import datetime
 from urllib.parse import unquote
 from flask import Flask
 from flask import render_template, request, send_from_directory
-from flask import abort, redirect, url_for, current_app
+from flask import abort, redirect, url_for, current_app, make_response
 from readfeed.data import Article, ArticleStore
 from readfeed import cli
 
@@ -101,6 +101,24 @@ def create_app(test_config=None):
             error_text=validation_error
         )
     
+    @app.route("/add", methods=['GET', 'POST', 'OPTIONS'])
+    def add():
+        if request.method == "OPTIONS":
+            r = make_response()
+            r.headers['Access-Control-Allow-Origin'] = "*"
+            r.headers['Access-Control-Allow-Headers'] = "*"
+            r.headers['Access-Control-Allow-Methods'] = "*"
+            return r
+        if not 'url' in request.args:
+            abort(400)
+        with ArticleStore(current_app.config['DATABASE']) as store:
+            if not _queue_url(store, unquote(request.args['url'])):
+                abort(400)
+        r = make_response()
+        r.status_code = 204
+        r.headers['Access-Control-Allow-Origin'] = "*"
+        return r
+
     @app.route("/remove")
     def remove():
         if not 'url' in request.args:

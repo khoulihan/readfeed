@@ -197,6 +197,18 @@
         <ul>
           <li>
             <a
+              href="javascript: (function() {xhr = new XMLHttpRequest(); let u = document.location.href; xhr.open(&quot;POST&quot;, encodeURI(&quot;{{ url_for('add', _external=True) }}?url=&quot; + u)); xhr.send();}());"
+              target="_blank"
+              title="Bookmark this link to save articles from anywhere! (May not be supported in all browsers)">
+              <img
+                width="32"
+                height="32"
+                src="{{ url_for('static', filename='bookmark.svg') }}"
+                alt="Bookmark Icon">
+            </a>
+          </li>
+          <li>
+            <a
               href="{{ url_for('feeds_static', filename=config.FEED_FILE) }}"
               target="_blank"
               title="Atom Feed">
