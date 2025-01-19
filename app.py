@@ -5,6 +5,7 @@ from urllib.parse import unquote
 from flask import Flask
 from flask import render_template, request, send_from_directory
 from flask import abort, redirect, url_for, current_app, make_response
+from werkzeug.middleware.proxy_fix import ProxyFix
 from readfeed.data import Article, ArticleStore
 from readfeed import cli
 
@@ -32,12 +33,23 @@ def create_app(test_config=None):
         FEED_ROUTE=DEFAULT_FEED_ROUTE,
         FEED_FILE=DEFAULT_FEED_FILE,
         PAGE_SIZE=DEFAULT_PAGE_SIZE,
+        PROXY_COUNT=0,
     )
 
     if test_config is None:
         app.config.from_pyfile('config.py', silent=True)
     else:
         app.config.from_mapping(test_config)
+    
+    if app.config['PROXY_COUNT'] > 0:
+        pc = app.config['PROXY_COUNT']
+        app.wsgi_app = ProxyFix(
+            app.wsgi_app,
+            x_for=pc,
+            x_proto=pc,
+            x_host=pc,
+            x_prefix=pc,
+        )
 
     try:
         os.makedirs(app.instance_path)
