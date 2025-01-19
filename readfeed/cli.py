@@ -97,17 +97,19 @@ def _process_failed_article(article):
 
 
 def _extract_source(soup, url):
-    site_meta = soup.head.find("meta", property="og:site_name")
-    if site_meta:
-        return site_meta['content']
+    if soup.head:
+        site_meta = soup.head.find("meta", property="og:site_name")
+        if site_meta:
+            return site_meta['content']
     parsed = urlparse(url)
     return parsed.hostname
 
 
 def _extract_title(soup, url):
-    title_meta = soup.head.find("meta", property="og:title")
-    if title_meta:
-        return title_meta['content']
+    if soup.head:
+        title_meta = soup.head.find("meta", property="og:title")
+        if title_meta:
+            return title_meta['content']
     if soup.title:
         return soup.title.string
     return _extract_source(soup, url)
